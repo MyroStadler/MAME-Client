@@ -21,65 +21,72 @@ namespace MAME_Client
         private string romsPath = @"roms\";
         private string flags = @"-r 1920x1080";
         private string[] romPaths;
-        private List<Button> buttons;
-        private Dictionary<Button, Dictionary<string, string>> infoByButton;
+        private List<Label> labels;
+        private Dictionary<Label, Dictionary<string, string>> infoByLabel;
         private Dictionary<string, string[]> csvByGame;
-        private Dictionary<string, Button> buttonByGame;
-
+        private Dictionary<string, Label> labelByGame;
+        private Label lastClicked = null;
         public MainWindow()
         {
             InitializeComponent();
         }
 
-        private void CreateButtons()
+        private void CreateLabels()
         {
             ColumnDefinition cdef = new ColumnDefinition();
             cdef.Width = new GridLength(100, GridUnitType.Star);
             Grid.ColumnDefinitions.Add(cdef);
-            infoByButton = new Dictionary<Button, Dictionary<string, string>>();
-            buttonByGame = new Dictionary<string, Button>();
+            infoByLabel = new Dictionary<Label, Dictionary<string, string>>();
+            labelByGame = new Dictionary<string, Label>();
             romPaths = Directory.GetFiles(mamePath + romsPath, "*.zip");
             int len = romPaths.Length;
-            buttons = new List<Button>();
-            Console.WriteLine(" * creating buttons ");
+            labels = new List<Label>();
+            Console.WriteLine(" * creating labels ");
             //Array.Sort(romPaths);
             Console.WriteLine("n paths: " + romPaths.Length.ToString());
             int row = 0;
             foreach (string path in romPaths)
             {
                 //ZipArchive zip = ZipFile.OpenRead(path); 
-                Button button = new Button();
+                Label label = new Label();
                 Dictionary<string, string> props = new Dictionary<string, string>();
                 string name = path.Substring(path.LastIndexOf(@"\") + 1, path.Length - 4 - (path.LastIndexOf(@"\") + 1));
-                infoByButton.Add(button, props);
-                buttons.Add(button);
+                infoByLabel.Add(label, props);
+                labels.Add(label);
                 props.Add("path", path);
                 props.Add("name", name);
-                button.Name = name;
-                button.Content = name;
+                label.Name = name;
+                label.Content = name;
                 Thickness margin = new Thickness();
-                margin.Top = 0;
+                margin.Top = 4;
                 margin.Bottom = 0;
-                button.Margin = margin;
-                button.BorderBrush = Brushes.Transparent;
-
-                button.Background = Brushes.White;
-                button.Foreground = Brushes.Black;
-                button.BorderThickness = new Thickness(0.0);
-                button.VerticalContentAlignment = VerticalAlignment.Top;
-                button.HorizontalContentAlignment = HorizontalAlignment.Left;
-                button.FontFamily = new FontFamily("Tahoma");
-                button.FontSize = 11.0;
-                button.SetValue(Grid.ColumnProperty, 0);
+                label.Margin = margin;
+                Thickness padding = new Thickness();
+                padding.Top = 0;
+                padding.Bottom = 0;
+                padding.Left = 5;
+                label.Padding = padding;
+                label.BorderBrush = Brushes.Transparent;
+                Thickness border = new Thickness();
+                border.Top = 0;
+                border.Bottom = 0;
+                label.BorderThickness = border;
+                label.Background = Brushes.Transparent;
+                label.Foreground = Brushes.Silver;
+                label.VerticalContentAlignment = VerticalAlignment.Top;
+                label.HorizontalContentAlignment = HorizontalAlignment.Left;
+                label.FontFamily = new FontFamily("Tahoma");
+                label.FontSize = 11.0;
+                label.SetValue(Grid.ColumnProperty, 0);
                 RowDefinition rdef = new RowDefinition();
                 rdef.Height = new GridLength(rowHeight);
                 Grid.RowDefinitions.Add(rdef);
-                button.SetValue(Grid.RowProperty, row);
-                button.Click += OnButtonClick;
-                Grid.Children.Add(button);
+                label.SetValue(Grid.RowProperty, row);
+                label.MouseUp += OnLabelClick;
+                Grid.Children.Add(label);
                 Grid.Height = rowHeight * (row + 1);
-                buttonByGame.Add(name, button);
-                //Console.WriteLine(" * button " + name);
+                labelByGame.Add(name, label);
+                //Console.WriteLine(" * label " + name);
                 row++;
             }
             if (File.Exists(mamePath + "roms.csv")) {
@@ -89,24 +96,31 @@ namespace MAME_Client
                     string line = reader.ReadLine();
                     string[] values = line.Split(',');
                     string code = values[0].Trim();
-                    if (buttonByGame.ContainsKey(code)) {
+                    if (labelByGame.ContainsKey(code)) {
                         csvByGame.Add(code, values);
                     }
                 }
                 foreach (KeyValuePair<string, string[]> entry in csvByGame) {
-                    Button button = buttonByGame[entry.Key];
-                    button.Content = entry.Value[1].Trim() + " - " + entry.Value[2].Trim() + " " + entry.Value[3].Trim();
+                    Label label = labelByGame[entry.Key];
+                    label.Content = entry.Value[1].Trim() + " - " + entry.Value[2].Trim() + " " + entry.Value[3].Trim();
                 }
             }
         }
-        private void OnButtonClick(object sender, RoutedEventArgs e)
+        private void OnLabelClick(object sender, RoutedEventArgs e)
         {
-            Button button = sender as Button;
-            string gameName = button.Name;
+            if (lastClicked != null) {
+                lastClicked.Background = Brushes.Transparent;
+                lastClicked.Foreground = Brushes.Silver;
+            }
+            Label label = sender as Label;
+            lastClicked = label;
+            lastClicked.Background = Brushes.Black;
+            lastClicked.Foreground = Brushes.Aqua;
+            string gameName = label.Name;
             run(gameName);
         }
         /*
-        private void ResizeButtons()
+        private void ResizeLabels()
         {
             Console.WriteLine(" * setting layout values");
             Console.WriteLine("width: " + this.Grid.ActualWidth.ToString());
@@ -123,7 +137,7 @@ namespace MAME_Client
 
         private void Grid_Loaded(object sender, RoutedEventArgs e)
         {
-            CreateButtons();
+            CreateLabels();
         }
 
         private void MAME_Client_Closing(object sender, System.ComponentModel.CancelEventArgs e)

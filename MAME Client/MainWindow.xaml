@@ -5,10 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MAME_Client"
         mc:Ignorable="d"
-        Title="MAME Client" Height="350" Width="525" Closing="MAME_Client_Closing" Loaded="MAME_Client_Loaded" Icon="Afterglow-Forum-Faces-2-Windows-Zealot.ico">
+        Title="MAME Client" Height="350" Width="525" Closing="MAME_Client_Closing" Loaded="MAME_Client_Loaded" Icon="Afterglow-Forum-Faces-2-Windows-Zealot.ico" Background="#FF272727">
     <ScrollViewer x:Name="Viewer" Margin="0,0,0,0" VerticalScrollBarVisibility="Auto">
-        <Grid x:Name="Grid" Margin="0,0,0,0" VerticalAlignment="Top" Height="100" Loaded="Grid_Loaded">
-            <Button x:Name="button" Content="Button" HorizontalAlignment="Left" Height="100" Margin="234,113,0,-113" VerticalAlignment="Top" Width="75"/>
-        </Grid>
+        <Grid x:Name="Grid" Margin="0,0,0,0" VerticalAlignment="Top" Height="100" Loaded="Grid_Loaded"/>
     </ScrollViewer>
 </Window>
